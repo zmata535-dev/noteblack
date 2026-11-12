@@ -1,0 +1,750 @@
+<Window x:Class="Noteblack.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Untitled - Noteblack"
+        Icon="app_icon.png"
+        Height="650" Width="950"
+        MinHeight="300" MinWidth="400"
+        WindowStartupLocation="CenterScreen"
+        Background="#000000"
+        Foreground="#F0F0F0"
+        AllowDrop="True"
+        Drop="Window_Drop"
+        DragOver="Window_DragOver">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32"
+                            ResizeBorderThickness="6"
+                            CornerRadius="0"
+                            GlassFrameThickness="0"
+                            UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Dark ScrollBar Styles -->
+        <Style x:Key="DarkScrollBarThumb" TargetType="{x:Type Thumb}">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Border Background="#3E3E3E" CornerRadius="3" Margin="2">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="#5A5A5A" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="#787878" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ControlTemplate x:Key="VerticalScrollBarTemplate" TargetType="{x:Type ScrollBar}">
+            <Grid SnapsToDevicePixels="true" Background="#0C0C0C">
+                <Track x:Name="PART_Track" IsDirectionReversed="true">
+                    <Track.DecreaseRepeatButton>
+                        <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Opacity="0" Focusable="False"/>
+                    </Track.DecreaseRepeatButton>
+                    <Track.IncreaseRepeatButton>
+                        <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Opacity="0" Focusable="False"/>
+                    </Track.IncreaseRepeatButton>
+                    <Track.Thumb>
+                        <Thumb Style="{StaticResource DarkScrollBarThumb}"/>
+                    </Track.Thumb>
+                </Track>
+            </Grid>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="HorizontalScrollBarTemplate" TargetType="{x:Type ScrollBar}">
+            <Grid SnapsToDevicePixels="true" Background="#0C0C0C">
+                <Track x:Name="PART_Track" IsDirectionReversed="false">
+                    <Track.DecreaseRepeatButton>
+                        <RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}" Opacity="0" Focusable="False"/>
+                    </Track.DecreaseRepeatButton>
+                    <Track.IncreaseRepeatButton>
+                        <RepeatButton Command="{x:Static ScrollBar.PageRightCommand}" Opacity="0" Focusable="False"/>
+                    </Track.IncreaseRepeatButton>
+                    <Track.Thumb>
+                        <Thumb Style="{StaticResource DarkScrollBarThumb}"/>
+                    </Track.Thumb>
+                </Track>
+            </Grid>
+        </ControlTemplate>
+
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="#0C0C0C"/>
+            <Setter Property="Foreground" Value="#3E3E3E"/>
+            <Setter Property="Template" Value="{StaticResource VerticalScrollBarTemplate}"/>
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Width" Value="Auto"/>
+                    <Setter Property="MinWidth" Value="0"/>
+                    <Setter Property="Height" Value="12"/>
+                    <Setter Property="MinHeight" Value="12"/>
+                    <Setter Property="Template" Value="{StaticResource HorizontalScrollBarTemplate}"/>
+                </Trigger>
+                <Trigger Property="Orientation" Value="Vertical">
+                    <Setter Property="Width" Value="12"/>
+                    <Setter Property="MinWidth" Value="12"/>
+                    <Setter Property="Height" Value="Auto"/>
+                    <Setter Property="MinHeight" Value="0"/>
+                    <Setter Property="Template" Value="{StaticResource VerticalScrollBarTemplate}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Dark Window Control Buttons -->
+        <Style x:Key="TitleBarButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="shell:WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#252525"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#333333"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TitleBarCloseButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource TitleBarButtonStyle}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#C42B1C"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#A82315"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Menu Styling -->
+        <Style TargetType="{x:Type Menu}">
+            <Setter Property="Background" Value="#0A0A0A"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+
+        <!-- Top-level MenuItem template (the menu bar items) -->
+        <ControlTemplate x:Key="TopLevelHeaderMenuItemTemplate" TargetType="{x:Type MenuItem}">
+            <Border x:Name="templateRoot" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" SnapsToDevicePixels="True">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter x:Name="Icon" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" Margin="3,0,0,0" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" Visibility="Collapsed"/>
+                    <ContentPresenter Grid.Column="1" ContentSource="Header" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                    <Popup x:Name="PART_Popup" AllowsTransparency="True" Focusable="False" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Bottom" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}" PlacementTarget="{Binding ElementName=templateRoot}">
+                        <Border x:Name="SubMenuBorder" Background="#1E1E1E" BorderBrush="#333333" BorderThickness="1" Padding="2">
+                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle"/>
+                        </Border>
+                    </Popup>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsSuspendingPopupAnimation" Value="True">
+                    <Setter TargetName="PART_Popup" Property="PopupAnimation" Value="None"/>
+                </Trigger>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter TargetName="templateRoot" Property="Background" Value="#252525"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#555555"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <!-- Submenu MenuItem template (dropdown items) -->
+        <ControlTemplate x:Key="SubmenuMenuItemTemplate" TargetType="{x:Type MenuItem}">
+            <Border x:Name="templateRoot" Background="#1E1E1E" BorderBrush="Transparent" BorderThickness="0" Height="25" SnapsToDevicePixels="True">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter x:Name="Icon" Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                    <Border x:Name="GlyphPanel" Grid.Column="0" Background="Transparent" HorizontalAlignment="Center" Height="22" VerticalAlignment="Center" Visibility="Hidden" Width="22">
+                        <Path x:Name="Glyph" Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="#58A6FF" FlowDirection="LeftToRight" Height="11" Width="10"/>
+                    </Border>
+                    <ContentPresenter x:Name="menuHeaderContainer" Grid.Column="1" ContentSource="Header" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="menuGestureText" Grid.Column="2" Margin="8,0,14,0" Opacity="0.5" Text="{TemplateBinding InputGestureText}" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="Icon" Value="{x:Null}">
+                    <Setter TargetName="Icon" Property="Visibility" Value="Collapsed"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="GlyphPanel" Property="Visibility" Value="Visible"/>
+                    <Setter TargetName="Icon" Property="Visibility" Value="Collapsed"/>
+                </Trigger>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter TargetName="templateRoot" Property="Background" Value="#333333"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#555555"/>
+                    <Setter TargetName="Glyph" Property="Fill" Value="#555555"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <!-- Submenu header (items that open a sub-submenu) -->
+        <ControlTemplate x:Key="SubmenuHeaderMenuItemTemplate" TargetType="{x:Type MenuItem}">
+            <Border x:Name="templateRoot" Background="#1E1E1E" BorderBrush="Transparent" BorderThickness="0" Height="25" SnapsToDevicePixels="True">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="20"/>
+                    </Grid.ColumnDefinitions>
+                    <ContentPresenter x:Name="Icon" Grid.Column="0" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Width="16" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                    <ContentPresenter Grid.Column="1" ContentSource="Header" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Margin="8,0,14,0" Opacity="0.5" Text="{TemplateBinding InputGestureText}" VerticalAlignment="Center"/>
+                    <Path x:Name="RightArrow" Grid.Column="3" Data="M0,0L4,3.5 0,7z" Fill="#AAAAAA" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Popup x:Name="PART_Popup" AllowsTransparency="True" Focusable="False" HorizontalOffset="-2" IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}" Placement="Right" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}">
+                        <Border x:Name="SubMenuBorder" Background="#1E1E1E" BorderBrush="#333333" BorderThickness="1" Padding="2">
+                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" KeyboardNavigation.TabNavigation="Cycle"/>
+                        </Border>
+                    </Popup>
+                </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="Icon" Value="{x:Null}">
+                    <Setter TargetName="Icon" Property="Visibility" Value="Collapsed"/>
+                </Trigger>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter TargetName="templateRoot" Property="Background" Value="#333333"/>
+                    <Setter TargetName="RightArrow" Property="Fill" Value="#FFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#555555"/>
+                    <Setter TargetName="RightArrow" Property="Fill" Value="#555555"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <Style TargetType="{x:Type MenuItem}">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4,8,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+            <Style.Triggers>
+                <!-- Top-level header (File, Edit, View, Help on the menu bar) -->
+                <Trigger Property="Role" Value="TopLevelHeader">
+                    <Setter Property="Template" Value="{StaticResource TopLevelHeaderMenuItemTemplate}"/>
+                </Trigger>
+                <!-- Top-level item (rare: a clickable item directly on the menu bar) -->
+                <Trigger Property="Role" Value="TopLevelItem">
+                    <Setter Property="Template" Value="{StaticResource TopLevelHeaderMenuItemTemplate}"/>
+                </Trigger>
+                <!-- Submenu header (an item in a dropdown that opens a sub-menu) -->
+                <Trigger Property="Role" Value="SubmenuHeader">
+                    <Setter Property="Template" Value="{StaticResource SubmenuHeaderMenuItemTemplate}"/>
+                </Trigger>
+                <!-- Submenu item (a normal clickable item inside a dropdown) -->
+                <Trigger Property="Role" Value="SubmenuItem">
+                    <Setter Property="Template" Value="{StaticResource SubmenuMenuItemTemplate}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Capsule Style for Save MenuItem -->
+        <Style x:Key="CapsuleSaveMenuItemStyle" TargetType="{x:Type MenuItem}">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="9,2,9,2"/>
+            <Setter Property="Margin" Value="4,0,8,0"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="ToolTip" Value="Save (Ctrl+S)"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type MenuItem}">
+                        <Border x:Name="capsuleBorder"
+                                Background="#121212"
+                                BorderBrush="#262626"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}"
+                                Margin="{TemplateBinding Margin}"
+                                SnapsToDevicePixels="True">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="💾" FontSize="10" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBlock x:Name="lblSave" Text="Save" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center" Foreground="#555555"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="capsuleBorder" Property="Background" Value="#0E0E0E"/>
+                                <Setter TargetName="capsuleBorder" Property="BorderBrush" Value="#202020"/>
+                                <Setter TargetName="capsuleBorder" Property="Opacity" Value="0.45"/>
+                                <Setter TargetName="lblSave" Property="Foreground" Value="#555555"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEnabled" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="False"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="capsuleBorder" Property="Background" Value="#17263A"/>
+                                <Setter TargetName="capsuleBorder" Property="BorderBrush" Value="#388BFD"/>
+                                <Setter TargetName="lblSave" Property="Foreground" Value="#58A6FF"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </MultiTrigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsEnabled" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="capsuleBorder" Property="Background" Value="#223B5A"/>
+                                <Setter TargetName="capsuleBorder" Property="BorderBrush" Value="#79C0FF"/>
+                                <Setter TargetName="lblSave" Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ContextMenu}">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ContextMenu}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type Separator}">
+            <Setter Property="Background" Value="#2A2A2A"/>
+            <Setter Property="Margin" Value="4,2,4,2"/>
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Separator}">
+                        <Border Background="#2A2A2A" Height="1" Margin="28,3,5,3" SnapsToDevicePixels="True"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark Button Style -->
+        <Style x:Key="DarkActionButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="#222222"/>
+            <Setter Property="Foreground" Value="#EEEEEE"/>
+            <Setter Property="BorderBrush" Value="#383838"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,4,10,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#333333"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#555555"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#444444"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#151515"/>
+                                <Setter Property="Foreground" Value="#555555"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark TextBox Style for Find / Replace -->
+        <Style x:Key="DarkInputTextBox" TargetType="{x:Type TextBox}">
+            <Setter Property="Background" Value="#161616"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/>
+            <Setter Property="SelectionBrush" Value="#264F78"/>
+            <Setter Property="Padding" Value="6,4,6,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0078D7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Dark Status Item Button Style -->
+        <Style x:Key="StatusBarItemButton" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#B0B0B0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,2,8,2"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#262626"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid" Background="#0A0A0A">
+        <Grid.RowDefinitions>
+            <!-- 0: Title Bar (with menu integrated) -->
+            <RowDefinition Height="32"/>
+            <!-- 1: Find & Replace Panel (Collapsible) -->
+            <RowDefinition Height="Auto"/>
+            <!-- 2: Go To Line Bar (Collapsible) -->
+            <RowDefinition Height="Auto"/>
+            <!-- 3: Editor Area -->
+            <RowDefinition Height="*"/>
+            <!-- 4: Status Bar -->
+            <RowDefinition Height="28"/>
+        </Grid.RowDefinitions>
+
+        <!-- ROW 0: Custom Dark Title Bar with Menu -->
+        <Grid x:Name="TitleBarGrid" Grid.Row="0" Background="#0A0A0A">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- App Icon and App Name -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                <Image Source="app_icon.png" Width="16" Height="16" Margin="0,0,8,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock x:Name="TitleText" Text="Untitled - Noteblack"
+                           Foreground="#D4D4D4" FontSize="12" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+            </StackPanel>
+
+            <!-- Menu in Title Bar -->
+            <Menu x:Name="MainMenu" Grid.Column="1" Background="Transparent" Foreground="#E0E0E0" Padding="12,0,0,0" BorderThickness="0" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                <!-- SAVE MENU (Capsule Border, Active on Change) -->
+                <MenuItem x:Name="MenuTopSave" Header="Save" Click="MenuFileSave_Click" Style="{StaticResource CapsuleSaveMenuItemStyle}"/>
+
+                <!-- FILE MENU -->
+                <MenuItem Header="_File">
+                <MenuItem Header="_New" InputGestureText="Ctrl+N" Click="MenuFileNew_Click"/>
+                <MenuItem Header="New _Window" InputGestureText="Ctrl+Shift+N" Click="MenuFileNewWindow_Click"/>
+                <MenuItem Header="_Open..." InputGestureText="Ctrl+O" Click="MenuFileOpen_Click"/>
+                <MenuItem Header="_Save" InputGestureText="Ctrl+S" Click="MenuFileSave_Click"/>
+                <MenuItem Header="Save _As..." InputGestureText="Ctrl+Shift+S" Click="MenuFileSaveAs_Click"/>
+                <Separator/>
+                <MenuItem Header="E_xit" InputGestureText="Alt+F4" Click="MenuFileExit_Click"/>
+            </MenuItem>
+
+            <!-- EDIT MENU -->
+            <MenuItem Header="_Edit">
+                <MenuItem x:Name="MenuEditUndo" Header="_Undo" InputGestureText="Ctrl+Z" Click="MenuEditUndo_Click"/>
+                <MenuItem x:Name="MenuEditRedo" Header="_Redo" InputGestureText="Ctrl+Y" Click="MenuEditRedo_Click"/>
+                <Separator/>
+                <MenuItem Header="Cu_t" InputGestureText="Ctrl+X" Command="ApplicationCommands.Cut"/>
+                <MenuItem Header="_Copy" InputGestureText="Ctrl+C" Command="ApplicationCommands.Copy"/>
+                <MenuItem Header="_Paste" InputGestureText="Ctrl+V" Command="ApplicationCommands.Paste"/>
+                <MenuItem Header="De_lete" InputGestureText="Del" Click="MenuEditDelete_Click"/>
+                <Separator/>
+                <MenuItem Header="_Find..." InputGestureText="Ctrl+F" Click="MenuEditFind_Click"/>
+                <MenuItem Header="Find _Next" InputGestureText="F3" Click="MenuEditFindNext_Click"/>
+                <MenuItem Header="Find Pre_vious" InputGestureText="Shift+F3" Click="MenuEditFindPrevious_Click"/>
+                <MenuItem Header="_Replace..." InputGestureText="Ctrl+H" Click="MenuEditReplace_Click"/>
+                <MenuItem Header="_Go To..." InputGestureText="Ctrl+G" Click="MenuEditGoTo_Click"/>
+                <Separator/>
+                <MenuItem Header="Select _All" InputGestureText="Ctrl+A" Command="ApplicationCommands.SelectAll"/>
+                <MenuItem Header="Time/_Date" InputGestureText="F5" Click="MenuEditTimeDate_Click"/>
+                <Separator/>
+                <!-- Line Endings Submenu -->
+                <MenuItem x:Name="MenuLineEndings" Header="_Line Endings">
+                    <MenuItem x:Name="MenuEndingCRLF" Header="Windows (CRLF - \r\n)" IsCheckable="True" Click="MenuEndingCRLF_Click"/>
+                    <MenuItem x:Name="MenuEndingLF" Header="Unix (LF - \n)" IsCheckable="True" Click="MenuEndingLF_Click"/>
+                    <MenuItem x:Name="MenuEndingCR" Header="Macintosh (CR - \r)" IsCheckable="True" Click="MenuEndingCR_Click"/>
+                </MenuItem>
+                <!-- Encodings Submenu -->
+                <MenuItem x:Name="MenuEncoding" Header="En_coding">
+                    <MenuItem x:Name="MenuEncUtf8" Header="UTF-8" IsCheckable="True" Click="MenuEncUtf8_Click"/>
+                    <MenuItem x:Name="MenuEncUtf8Bom" Header="UTF-8 with BOM" IsCheckable="True" Click="MenuEncUtf8Bom_Click"/>
+                    <MenuItem x:Name="MenuEncUtf16LE" Header="UTF-16 LE" IsCheckable="True" Click="MenuEncUtf16LE_Click"/>
+                    <MenuItem x:Name="MenuEncUtf16BE" Header="UTF-16 BE" IsCheckable="True" Click="MenuEncUtf16BE_Click"/>
+                    <MenuItem x:Name="MenuEncAnsi" Header="ANSI" IsCheckable="True" Click="MenuEncAnsi_Click"/>
+                </MenuItem>
+            </MenuItem>
+
+            <!-- FORMAT / VIEW MENU -->
+            <MenuItem Header="_View">
+                <MenuItem x:Name="MenuViewWordWrap" Header="_Word Wrap" IsCheckable="True" Click="MenuViewWordWrap_Click"/>
+                <MenuItem Header="_Font..." Click="MenuViewFont_Click"/>
+                <Separator/>
+                <MenuItem Header="_Zoom">
+                    <MenuItem Header="Zoom _In" InputGestureText="Ctrl+Plus" Click="MenuZoomIn_Click"/>
+                    <MenuItem Header="Zoom _Out" InputGestureText="Ctrl+Minus" Click="MenuZoomOut_Click"/>
+                    <MenuItem Header="_Restore Default Zoom" InputGestureText="Ctrl+0" Click="MenuZoomReset_Click"/>
+                </MenuItem>
+                <MenuItem x:Name="MenuViewStatusBar" Header="_Status Bar" IsCheckable="True" IsChecked="True" Click="MenuViewStatusBar_Click"/>
+                <Separator/>
+                <MenuItem Header="_Theme">
+                    <MenuItem x:Name="MenuThemePureBlack" Header="Pure Black (OLED)" IsCheckable="True" Click="MenuThemePureBlack_Click"/>
+                    <MenuItem x:Name="MenuThemeDeepDark" Header="Deep Dark" IsCheckable="True" Click="MenuThemeDeepDark_Click"/>
+                    <MenuItem x:Name="MenuThemeCharcoal" Header="Charcoal" IsCheckable="True" Click="MenuThemeCharcoal_Click"/>
+                </MenuItem>
+            </MenuItem>
+
+            <!-- TIME MENU -->
+            <MenuItem Header="_Time" Click="MenuTimeInsert_Click" ToolTip="Insert current timestamp"/>
+
+            <!-- HELP MENU -->
+            <MenuItem Header="_Help">
+                <MenuItem Header="_Line Endings Guide" Click="MenuHelpLineEndings_Click"/>
+                <MenuItem Header="_About Noteblack" Click="MenuHelpAbout_Click"/>
+            </MenuItem>
+        </Menu>
+
+            <!-- Draggable Area in Middle -->
+            <Rectangle Grid.Column="2" Fill="Transparent"/>
+
+            <!-- Window Caption Controls: Minimize, Maximize/Restore, Close -->
+            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                <Button x:Name="BtnMinimize" Style="{StaticResource TitleBarButtonStyle}" Click="BtnMinimize_Click" ToolTip="Minimize">
+                    <Path Data="M 0,0 L 10,0" Stroke="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" SnapsToDevicePixels="True"/>
+                </Button>
+                <Button x:Name="BtnMaximize" Style="{StaticResource TitleBarButtonStyle}" Click="BtnMaximize_Click" ToolTip="Maximize">
+                    <Path x:Name="MaximizeGlyph" Data="M 0.5,0.5 L 9.5,0.5 9.5,9.5 0.5,9.5 Z" Stroke="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1" Fill="Transparent" SnapsToDevicePixels="True"/>
+                </Button>
+                <Button x:Name="BtnClose" Style="{StaticResource TitleBarCloseButtonStyle}" Click="BtnClose_Click" ToolTip="Close">
+                    <Path Data="M 0,0 L 9,9 M 9,0 L 0,9" Stroke="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.1" SnapsToDevicePixels="True"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- ROW 1: Find & Replace Panel (Collapsible) -->
+        <Border x:Name="FindReplacePanel" Grid.Row="1" Background="#161616" BorderBrush="#2C2C2C" BorderThickness="0,0,0,1" Visibility="Collapsed" Padding="10,6,10,8">
+            <StackPanel Orientation="Vertical">
+                <!-- Search Row -->
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="240"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Find:" Foreground="#CCCCCC" VerticalAlignment="Center" Margin="0,0,8,0" Width="55"/>
+                    <TextBox x:Name="TxtFind" Grid.Column="1" Style="{StaticResource DarkInputTextBox}" KeyDown="TxtFind_KeyDown"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0,0,0">
+                        <Button x:Name="BtnFindNext" Content="Find Next" Style="{StaticResource DarkActionButton}" Margin="0,0,4,0" Click="BtnFindNext_Click"/>
+                        <Button x:Name="BtnFindPrev" Content="Find Prev" Style="{StaticResource DarkActionButton}" Margin="0,0,8,0" Click="BtnFindPrev_Click"/>
+                        <CheckBox x:Name="ChkMatchCase" Content="Match case" Foreground="#CCCCCC" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <CheckBox x:Name="ChkWrapAround" Content="Wrap around" IsChecked="True" Foreground="#CCCCCC" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock x:Name="TxtFindStatus" Grid.Column="3" Text="" Foreground="#8B949E" VerticalAlignment="Center" Margin="12,0,0,0" FontStyle="Italic"/>
+
+                    <Button Grid.Column="4" Content="✕" Width="26" Height="24" Background="Transparent" Foreground="#888888" BorderThickness="0" Cursor="Hand" Click="BtnCloseFind_Click" ToolTip="Close (Esc)"/>
+                </Grid>
+
+                <!-- Replace Row (Collapsible) -->
+                <Grid x:Name="ReplaceRow" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="240"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Replace:" Foreground="#CCCCCC" VerticalAlignment="Center" Margin="0,0,8,0" Width="55"/>
+                    <TextBox x:Name="TxtReplace" Grid.Column="1" Style="{StaticResource DarkInputTextBox}" KeyDown="TxtReplace_KeyDown"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0,0,0">
+                        <Button x:Name="BtnReplace" Content="Replace" Style="{StaticResource DarkActionButton}" Margin="0,0,4,0" Click="BtnReplace_Click"/>
+                        <Button x:Name="BtnReplaceAll" Content="Replace All" Style="{StaticResource DarkActionButton}" Click="BtnReplaceAll_Click"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- ROW 2: Go To Line Bar (Collapsible) -->
+        <Border x:Name="GoToLinePanel" Grid.Row="2" Background="#161616" BorderBrush="#2C2C2C" BorderThickness="0,0,0,1" Visibility="Collapsed" Padding="10,6,10,6">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Go to line:" Foreground="#CCCCCC" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox x:Name="TxtGoToLine" Width="100" Style="{StaticResource DarkInputTextBox}" KeyDown="TxtGoToLine_KeyDown"/>
+                <Button Content="Go" Style="{StaticResource DarkActionButton}" Margin="8,0,4,0" Click="BtnGoToLineConfirm_Click"/>
+                <Button Content="Cancel" Style="{StaticResource DarkActionButton}" Click="BtnGoToLineCancel_Click"/>
+                <TextBlock x:Name="TxtGoToLineStatus" Foreground="#E06C75" VerticalAlignment="Center" Margin="10,0,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ROW 3: Main Text Editor Area -->
+        <TextBox x:Name="Editor" Grid.Row="3"
+                 Background="#000000"
+                 Foreground="#F0F0F0"
+                 CaretBrush="#FFFFFF"
+                 SelectionBrush="#264F78"
+                 BorderThickness="0"
+                 Padding="8,6,8,6"
+                 FontFamily="Consolas"
+                 FontSize="14"
+                 AcceptsReturn="True"
+                 AcceptsTab="True"
+                 HorizontalScrollBarVisibility="Auto"
+                 VerticalScrollBarVisibility="Auto"
+                 TextWrapping="NoWrap"
+                 PreviewKeyDown="Editor_PreviewKeyDown"
+                 PreviewMouseWheel="Editor_PreviewMouseWheel"
+                 TextChanged="Editor_TextChanged"
+                 SelectionChanged="Editor_SelectionChanged">
+            <TextBox.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Undo" InputGestureText="Ctrl+Z" Click="MenuEditUndo_Click"/>
+                    <MenuItem Header="Redo" InputGestureText="Ctrl+Y" Click="MenuEditRedo_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Cut" InputGestureText="Ctrl+X" Command="ApplicationCommands.Cut"/>
+                    <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="ApplicationCommands.Copy"/>
+                    <MenuItem Header="Paste" InputGestureText="Ctrl+V" Command="ApplicationCommands.Paste"/>
+                    <MenuItem Header="Delete" InputGestureText="Del" Click="MenuEditDelete_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Select All" InputGestureText="Ctrl+A" Command="ApplicationCommands.SelectAll"/>
+                </ContextMenu>
+            </TextBox.ContextMenu>
+        </TextBox>
+
+        <!-- ROW 4: Status Bar -->
+        <Border x:Name="StatusBarBorder" Grid.Row="4" Background="#0A0A0A" BorderBrush="#1C1C1C" BorderThickness="0,1,0,0">
+            <Grid Margin="10,0,10,0">
+                <Grid.ColumnDefinitions>
+                    <!-- Left: Caret position & document stats -->
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <!-- Right: Zoom, Line Ending, Encoding -->
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Stats -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusCaretPos" Text="Ln 1, Col 1" Foreground="#B0B0B0" FontSize="11.5" FontFamily="Segoe UI" Margin="0,0,16,0"/>
+                    <TextBlock x:Name="StatusDocStats" Text="1 line, 0 characters" Foreground="#777777" FontSize="11.5" FontFamily="Segoe UI"/>
+                </StackPanel>
+
+                <!-- Right Controls: Zoom, Line Ending (clickable!), Encoding (clickable!) -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Zoom Button -->
+                    <Button x:Name="BtnStatusZoom" Style="{StaticResource StatusBarItemButton}" Content="100%" ToolTip="Click to reset zoom (or Ctrl + Mouse Wheel)" Click="BtnStatusZoom_Click"/>
+                    <Rectangle Width="1" Height="14" Fill="#282828" Margin="4,0,4,0"/>
+
+                    <!-- Line Ending Button (clickable popup!) -->
+                    <Button x:Name="BtnStatusLineEnding" Style="{StaticResource StatusBarItemButton}" Content="Windows (CRLF)" ToolTip="Click to switch line endings (CRLF / LF / CR)" Click="BtnStatusLineEnding_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="LineEndingContextMenu">
+                                <MenuItem Header="Windows (CRLF - \r\n)" Click="MenuEndingCRLF_Click"/>
+                                <MenuItem Header="Unix (LF - \n)" Click="MenuEndingLF_Click"/>
+                                <MenuItem Header="Macintosh (CR - \r)" Click="MenuEndingCR_Click"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                    <Rectangle Width="1" Height="14" Fill="#282828" Margin="4,0,4,0"/>
+
+                    <!-- Encoding Button (clickable popup!) -->
+                    <Button x:Name="BtnStatusEncoding" Style="{StaticResource StatusBarItemButton}" Content="UTF-8" ToolTip="Click to change encoding" Click="BtnStatusEncoding_Click">
+                        <Button.ContextMenu>
+                            <ContextMenu x:Name="EncodingContextMenu">
+                                <MenuItem Header="UTF-8" Click="MenuEncUtf8_Click"/>
+                                <MenuItem Header="UTF-8 with BOM" Click="MenuEncUtf8Bom_Click"/>
+                                <MenuItem Header="UTF-16 LE" Click="MenuEncUtf16LE_Click"/>
+                                <MenuItem Header="UTF-16 BE" Click="MenuEncUtf16BE_Click"/>
+                                <MenuItem Header="ANSI" Click="MenuEncAnsi_Click"/>
+                            </ContextMenu>
+                        </Button.ContextMenu>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

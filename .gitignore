@@ -1,0 +1,18 @@
+# Build outputs
+bin/
+obj/
+*.exe
+*.pdb
+
+# Visual Studio / Rider files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# OS generated
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

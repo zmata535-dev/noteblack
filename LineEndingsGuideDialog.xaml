@@ -1,0 +1,76 @@
+<Window x:Class="Noteblack.LineEndingsGuideDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Line Endings Guide" Height="430" Width="520"
+        Icon="app_icon.png"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#141414" Foreground="#ECECEC">
+
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="32" ResizeBorderThickness="0" CornerRadius="0" GlassFrameThickness="0"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Grid Background="#141414">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title bar -->
+        <Grid Grid.Row="0" Background="#141414">
+            <TextBlock Text="Line Endings Guide" Foreground="#D4D4D4" VerticalAlignment="Center" Margin="14,0,0,0" FontSize="12"/>
+            <Button Content="✕" Width="40" Height="32" HorizontalAlignment="Right" Background="Transparent" Foreground="#AAAAAA" BorderThickness="0" Click="BtnClose_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
+        </Grid>
+
+        <!-- Content -->
+        <ScrollViewer Grid.Row="1" Margin="20,10,20,10" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Universal Newline Support in Noteblack" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,10"/>
+                <TextBlock Text="Different operating systems and environments historically use different byte sequences to represent the end of a line. Noteblack natively supports reading, displaying, typing, and saving in all of them."
+                           Foreground="#CCCCCC" TextWrapping="Wrap" Margin="0,0,0,14" LineHeight="19"/>
+
+                <!-- CRLF -->
+                <Border Background="#1C1E24" CornerRadius="4" BorderBrush="#2D333B" BorderThickness="1" Padding="12" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Windows: CRLF (\r\n / 0x0D 0x0A)" FontWeight="SemiBold" Foreground="#58A6FF" Margin="0,0,0,4"/>
+                        <TextBlock Text="Carriage Return + Line Feed. Standard on DOS, Microsoft Windows, HTTP headers, and SMTP email protocols." Foreground="#B0B0B0" TextWrapping="Wrap" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- LF -->
+                <Border Background="#1C1E24" CornerRadius="4" BorderBrush="#2D333B" BorderThickness="1" Padding="12" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Unix / Linux / macOS: LF (\n / 0x0A)" FontWeight="SemiBold" Foreground="#7EE787" Margin="0,0,0,4"/>
+                        <TextBlock Text="Line Feed only. Standard on Linux, Unix, BSD, macOS (OS X), Android, and modern developer tooling (Git, Docker)." Foreground="#B0B0B0" TextWrapping="Wrap" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- CR -->
+                <Border Background="#1C1E24" CornerRadius="4" BorderBrush="#2D333B" BorderThickness="1" Padding="12" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Macintosh: CR (\r / 0x0D)" FontWeight="SemiBold" Foreground="#FFA657" Margin="0,0,0,4"/>
+                        <TextBlock Text="Carriage Return only. Standard on classic Apple Macintosh (Mac OS 9 and earlier), Commodore 64, and Apple II." Foreground="#B0B0B0" TextWrapping="Wrap" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Unicode -->
+                <Border Background="#1C1E24" CornerRadius="4" BorderBrush="#2D333B" BorderThickness="1" Padding="12" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="Unicode Line Breaks" FontWeight="SemiBold" Foreground="#D2A8FF" Margin="0,0,0,4"/>
+                        <TextBlock Text="Next Line (NEL \u0085), Line Separator (LS \u2028), Paragraph Separator (PS \u2029). Properly recognized and normalized." Foreground="#B0B0B0" TextWrapping="Wrap" FontSize="12"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="How to switch: Click the line ending indicator in the bottom-right status bar or use the Edit -> Line Endings menu." Foreground="#888888" FontStyle="Italic" FontSize="11.5" Margin="2,4,0,10"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bottom OK Button -->
+        <Border Grid.Row="2" Background="#181818" BorderBrush="#252525" BorderThickness="0,1,0,0" Padding="0,10,20,10">
+            <Button Content="Close" Width="84" Height="28" HorizontalAlignment="Right" Background="#0E639C" Foreground="#FFFFFF" BorderThickness="0" Click="BtnClose_Click"/>
+        </Border>
+    </Grid>
+</Window>
